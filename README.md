@@ -2,7 +2,7 @@
 
 A clean, frameless desktop client for [Home Assistant](https://www.home-assistant.io/) — supports Windows and Linux.
 
-## Features
+# Features
 
 - 🏠 First-run setup wizard to enter your HA server address
 - 🔐 Persistent login — saves cookies, localStorage, and session data
@@ -13,7 +13,12 @@ A clean, frameless desktop client for [Home Assistant](https://www.home-assistan
 
 ---
 
-## Getting Started
+# Getting Started
+
+## For normal users:
+#### Download the app via releases for Windows and Linux
+
+## For Developers:
 
 ### Prerequisites
 
@@ -38,10 +43,6 @@ On first startup, you'll see a setup screen. Enter your Home Assistant server ad
 - `192.168.1.10:8123` ← local IP
 - `https://my.homeassistant.domain.com` ← remote/Nabu Casa
 
-Your server address is saved to `%APPDATA%/home-assistant-desktop/config.json` (Windows) or `~/.config/home-assistant-desktop/config.json` (Linux).
-
-Login credentials (tokens, cookies, localStorage) are stored in the Electron persistent session under `persist:homeassistant`.
-
 ---
 
 ## Building Installers
@@ -65,8 +66,6 @@ npm run build:linux
 ```bash
 npm run build
 ```
-
-> **Note:** Cross-compiling Windows `.exe` from Linux requires Wine. It's easiest to build each platform natively.
 
 ---
 ## Changing Server
