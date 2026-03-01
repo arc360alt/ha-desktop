@@ -31,6 +31,16 @@ function saveConfig(config) {
   }
 }
 
+function applyMediaPermissions(ses) {
+  const allowed = ['media', 'audioCapture', 'videoCapture', 'microphone', 'camera', 'notifications'];
+  ses.setPermissionRequestHandler((_wc, permission, callback) => {
+    callback(allowed.includes(permission));
+  });
+  ses.setPermissionCheckHandler((_wc, permission) => {
+    return allowed.includes(permission);
+  });
+}
+
 function createSetupWindow() {
   setupWindow = new BrowserWindow({
     width: 520,
@@ -85,6 +95,11 @@ function createMainWindow(serverUrl) {
       allowRunningInsecureContent: true
     },
     icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png')
+  });
+
+  // Apply mic/media permissions to the webview session when it attaches
+  mainWindow.webContents.on('did-attach-webview', (_event, webviewContents) => {
+    applyMediaPermissions(webviewContents.session);
   });
 
   // Load the wrapper HTML which contains the custom titlebar + webview
@@ -191,6 +206,9 @@ ipcMain.handle('navigate-reload', (event) => {
 });
 
 app.whenReady().then(() => {
+  // Apply permissions to the persisted HA session at startup
+  applyMediaPermissions(session.fromPartition('persist:homeassistant'));
+
   const config = loadConfig();
 
   if (config && config.serverUrl) {
