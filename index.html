@@ -827,15 +827,16 @@
       <p class="section-sub">Release history and notable changes across versions.</p>
     </div>
 
-    <div class="changelog-list">
+    <div class="changelog-list" id="changelog-list">
+      <!-- Populated by JS -->
       <div class="changelog-entry reveal">
         <div class="changelog-dot"></div>
         <div class="changelog-meta">
-          <span class="changelog-version" id="changelog-version">v1.1.0</span>
+          <span class="changelog-version">v1.1.0</span>
           <span class="changelog-tag tag-latest">Latest</span>
-          <span class="changelog-date" id="changelog-date">Feb 2026</span>
+          <span class="changelog-date">Feb 2026</span>
         </div>
-        <ul class="changelog-changes" id="changelog-changes">
+        <ul class="changelog-changes">
           <li>Initial public release</li>
         </ul>
       </div>
@@ -871,64 +872,83 @@
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-    // Auto-fetch latest GitHub release
-    async function fetchLatestRelease() {
+    // Auto-fetch all GitHub releases
+    async function fetchReleases() {
       try {
-        const res = await fetch('https://api.github.com/repos/arc360alt/ha-desktop/releases/latest');
+        // Fetch up to 100 releases (covers virtually any project)
+        const res = await fetch('https://api.github.com/repos/arc360alt/ha-desktop/releases?per_page=100');
         if (!res.ok) throw new Error('GitHub API error: ' + res.status);
-        const release = await res.json();
+        const releases = await res.json();
+        if (!releases.length) return;
 
-        const version = release.tag_name; // e.g. "v1.1.0"
-        const assets  = release.assets || [];
+        // --- Update download buttons from the latest release ---
+        const latest = releases[0];
+        const assets = latest.assets || [];
 
-        // Match assets by file extension
         const exeAsset      = assets.find(a => a.name.endsWith('.exe'));
         const appImageAsset = assets.find(a => a.name.endsWith('.AppImage'));
         const debAsset      = assets.find(a => a.name.endsWith('.deb'));
 
-        // Update download button hrefs
         if (exeAsset)      document.getElementById('dl-windows').href  = exeAsset.browser_download_url;
         if (appImageAsset) document.getElementById('dl-appimage').href = appImageAsset.browser_download_url;
         if (debAsset)      document.getElementById('dl-deb').href      = debAsset.browser_download_url;
 
-        // Update changelog version
-        const versionEl = document.getElementById('changelog-version');
-        if (versionEl) versionEl.textContent = version;
-
-        // Update changelog date
-        const dateEl = document.getElementById('changelog-date');
-        if (dateEl && release.published_at) {
-          const d = new Date(release.published_at);
-          dateEl.textContent = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        }
-
-        // Update changelog body from release notes (if any)
-        const changesEl = document.getElementById('changelog-changes');
-        if (changesEl && release.body && release.body.trim()) {
-          // Parse markdown bullet lines into <li> items
-          const lines = release.body
-            .split('\n')
-            .map(l => l.replace(/^[-*]\s*/, '').trim())
-            .filter(l => l.length > 0);
-
-          if (lines.length > 0) {
-            changesEl.innerHTML = lines.map(l => `<li>${l}</li>`).join('');
-          }
-        }
-
-        // Update downloads subtitle with live version
+        // Update downloads subtitle
         const subtitle = document.getElementById('dl-subtitle');
         if (subtitle) {
-          subtitle.textContent = `Latest release: ${version}. All builds are compiled and released automatically via GitHub Actions.`;
+          subtitle.textContent = `Latest release: ${latest.tag_name}. All builds are compiled and released automatically via GitHub Actions.`;
         }
 
+        // --- Build full changelog from all releases ---
+        const changelogList = document.getElementById('changelog-list');
+        if (!changelogList) return;
+
+        changelogList.innerHTML = releases.map((release, index) => {
+          const isLatest = index === 0;
+
+          // Format date
+          const d = new Date(release.published_at);
+          const dateStr = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+          // Parse release body into bullet items
+          let changesHTML = '<li>No notes provided.</li>';
+          if (release.body && release.body.trim()) {
+            const lines = release.body
+              .split('\n')
+              .map(l => l.replace(/^[-*#]+\s*/, '').trim())
+              .filter(l => l.length > 0);
+            if (lines.length > 0) {
+              changesHTML = lines.map(l => `<li>${l}</li>`).join('');
+            }
+          }
+
+          const tagHTML = isLatest
+            ? `<span class="changelog-tag tag-latest">Latest</span>`
+            : `<span class="changelog-tag tag-stable">Stable</span>`;
+
+          return `
+            <div class="changelog-entry reveal">
+              <div class="changelog-dot"></div>
+              <div class="changelog-meta">
+                <span class="changelog-version">${release.tag_name}</span>
+                ${tagHTML}
+                <span class="changelog-date">${dateStr}</span>
+              </div>
+              <ul class="changelog-changes">${changesHTML}</ul>
+            </div>
+          `;
+        }).join('');
+
+        // Re-run scroll observer on newly injected entries
+        document.querySelectorAll('.changelog-entry.reveal:not(.visible)').forEach(el => observer.observe(el));
+
       } catch (err) {
-        console.warn('Could not fetch latest release from GitHub:', err);
-        // Page falls back gracefully to the static content already in the HTML
+        console.warn('Could not fetch releases from GitHub:', err);
+        // Falls back to the static entry already in the HTML
       }
     }
 
-    fetchLatestRelease();
+    fetchReleases();
   </script>
 </body>
 </html>
