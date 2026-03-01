@@ -388,6 +388,14 @@
       <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
       Developer Tools
     </button>
+    <button class="dropdown-item" onclick="toggleBorders()">
+      <svg viewBox="0 0 24 24" id="borders-icon">
+        <rect x="3" y="3" width="18" height="18" rx="2" 
+          stroke="currentColor" stroke-width="2" 
+          fill="none" id="borders-rect"/>
+      </svg>
+      <span id="borders-label">System Borders</span>
+    </button>
     <div class="dropdown-sep"></div>
     <button class="dropdown-item danger" onclick="showResetModal()">
       <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -522,6 +530,61 @@
     document.querySelector('.btn-close').onclick = () => ipcRenderer.invoke('window-close');
     document.querySelector('.btn-min').onclick   = () => ipcRenderer.invoke('window-minimize');
     document.querySelector('.btn-max').onclick   = () => ipcRenderer.invoke('window-maximize');
+    // System borders toggle
+let bordersEnabled = localStorage.getItem('systemBorders') === 'true';
+
+function applyBordersUI(enabled, showToast = false) {
+  document.getElementById('borders-rect').setAttribute('fill', enabled ? 'currentColor' : 'none');
+  document.getElementById('borders-label').textContent = 'System Borders';
+  if (showToast) showRestartToast();
+}
+
+// Apply on load
+applyBordersUI(bordersEnabled);
+
+function toggleBorders() {
+  bordersEnabled = !bordersEnabled;
+  localStorage.setItem('systemBorders', bordersEnabled);
+  ipcRenderer.invoke('set-frame', bordersEnabled);
+  applyBordersUI(bordersEnabled, true);
+  dropdown.classList.remove('open');
+}
+function showRestartToast() {
+  const toast = document.getElementById('restart-toast');
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => closeRestartToast(), 5000);
+}
+
+function closeRestartToast() {
+  document.getElementById('restart-toast').style.transform = 'translateX(-50%) translateY(80px)';
+}
   </script>
+<div id="restart-toast" style="
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #1a1f2e;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease;
+  z-index: 999;
+  white-space: nowrap;
+">
+  <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#febc2e;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+  Restart the app to apply border changes
+  <button onclick="closeRestartToast()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;">×</button>
+</div>
 </body>
 </html>

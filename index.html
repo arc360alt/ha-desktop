@@ -662,7 +662,7 @@
       <li><a href="#features">Features</a></li>
       <li><a href="#downloads">Downloads</a></li>
       <li><a href="#changelog">Changelog</a></li>
-      <li><a href="https://github.com/your-repo" target="_blank">GitHub</a></li>
+      <li><a href="https://github.com/arc360alt/ha-desktop" target="_blank">GitHub</a></li>
       <li><a href="#downloads" class="nav-cta">Download</a></li>
     </ul>
   </nav>
@@ -677,13 +677,13 @@
     <p class="hero-sub">A native desktop wrapper for Home Assistant. Fast, persistent sessions, and a clean interface that stays out of your way.</p>
 
     <div class="hero-downloads">
-    <a href="#downloads" class="dl-btn dl-btn-primary">
+      <a href="#downloads" class="dl-btn dl-btn-primary">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <div class="dl-btn-label">
-        <span>Get the app</span>
-        <strong>Download Now</strong>
+          <span>Get the app</span>
+          <strong>Download Now</strong>
         </div>
-    </a>
+      </a>
     </div>
 
     <div class="hero-window">
@@ -758,7 +758,7 @@
       <div class="reveal">
         <div class="section-label">Downloads</div>
         <div class="section-title">Get the app</div>
-        <p class="section-sub">Available for Windows and Linux. All builds are compiled and released automatically via GitHub Actions.</p>
+        <p class="section-sub" id="dl-subtitle">Available for Windows and Linux. All builds are compiled and released automatically via GitHub Actions.</p>
       </div>
 
       <div class="downloads-grid">
@@ -774,7 +774,7 @@
             </div>
           </div>
           <p>NSIS installer for Windows 10 and 11. Supports custom install directory and runs on first launch.</p>
-          <a href="https://github.com/arc360alt/ha-desktop/releases/download/v1.1.0/Home.Assistant.Setup.1.1.0.exe" class="download-link download-link-primary">
+          <a id="dl-windows" href="#" class="download-link download-link-primary">
             <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download .exe
           </a>
@@ -784,7 +784,7 @@
         <div class="download-card reveal">
           <div class="download-card-header">
             <div class="download-os-icon">
-            <i class="fa-brands fa-linux" style="font-size: 24px; color: var(--accent);"></i>
+              <i class="fa-brands fa-linux" style="font-size: 24px; color: var(--accent);"></i>
             </div>
             <div>
               <h3>Linux</h3>
@@ -792,8 +792,8 @@
             </div>
           </div>
           <p>Universal AppImage that runs on any modern Linux distro without installation.</p>
-          <a href="https://github.com/arc360alt/ha-desktop/releases/download/v1.1.0/Home.Assistant-1.1.0.AppImage" class="download-link download-link-primary">
-<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <a id="dl-appimage" href="#" class="download-link download-link-primary">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download .AppImage
           </a>
         </div>
@@ -802,16 +802,16 @@
         <div class="download-card reveal">
           <div class="download-card-header">
             <div class="download-os-icon">
-            <i class="fa-brands fa-linux" style="font-size: 24px; color: var(--accent);"></i>
+              <i class="fa-brands fa-linux" style="font-size: 24px; color: var(--accent);"></i>
             </div>
             <div>
               <h3>Linux</h3>
               <span>Debian · x64</span>
             </div>
           </div>
-          <p>.deb package for all debian distros. No other discription needed, thats all.</p>
-          <a href="https://github.com/arc360alt/ha-desktop/releases/download/v1.1.0/home-assistant-desktop_1.1.0_amd64.deb" class="download-link download-link-secondary">
-<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <p>.deb package for all Debian-based distros. Install with your package manager or dpkg.</p>
+          <a id="dl-deb" href="#" class="download-link download-link-secondary">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download .deb
           </a>
         </div>
@@ -831,11 +831,11 @@
       <div class="changelog-entry reveal">
         <div class="changelog-dot"></div>
         <div class="changelog-meta">
-          <span class="changelog-version">v1.1.0</span>
+          <span class="changelog-version" id="changelog-version">v1.1.0</span>
           <span class="changelog-tag tag-latest">Latest</span>
-          <span class="changelog-date">Feb 2026</span>
+          <span class="changelog-date" id="changelog-date">Feb 2026</span>
         </div>
-        <ul class="changelog-changes">
+        <ul class="changelog-changes" id="changelog-changes">
           <li>Initial public release</li>
         </ul>
       </div>
@@ -870,6 +870,65 @@
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Auto-fetch latest GitHub release
+    async function fetchLatestRelease() {
+      try {
+        const res = await fetch('https://api.github.com/repos/arc360alt/ha-desktop/releases/latest');
+        if (!res.ok) throw new Error('GitHub API error: ' + res.status);
+        const release = await res.json();
+
+        const version = release.tag_name; // e.g. "v1.1.0"
+        const assets  = release.assets || [];
+
+        // Match assets by file extension
+        const exeAsset      = assets.find(a => a.name.endsWith('.exe'));
+        const appImageAsset = assets.find(a => a.name.endsWith('.AppImage'));
+        const debAsset      = assets.find(a => a.name.endsWith('.deb'));
+
+        // Update download button hrefs
+        if (exeAsset)      document.getElementById('dl-windows').href  = exeAsset.browser_download_url;
+        if (appImageAsset) document.getElementById('dl-appimage').href = appImageAsset.browser_download_url;
+        if (debAsset)      document.getElementById('dl-deb').href      = debAsset.browser_download_url;
+
+        // Update changelog version
+        const versionEl = document.getElementById('changelog-version');
+        if (versionEl) versionEl.textContent = version;
+
+        // Update changelog date
+        const dateEl = document.getElementById('changelog-date');
+        if (dateEl && release.published_at) {
+          const d = new Date(release.published_at);
+          dateEl.textContent = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+
+        // Update changelog body from release notes (if any)
+        const changesEl = document.getElementById('changelog-changes');
+        if (changesEl && release.body && release.body.trim()) {
+          // Parse markdown bullet lines into <li> items
+          const lines = release.body
+            .split('\n')
+            .map(l => l.replace(/^[-*]\s*/, '').trim())
+            .filter(l => l.length > 0);
+
+          if (lines.length > 0) {
+            changesEl.innerHTML = lines.map(l => `<li>${l}</li>`).join('');
+          }
+        }
+
+        // Update downloads subtitle with live version
+        const subtitle = document.getElementById('dl-subtitle');
+        if (subtitle) {
+          subtitle.textContent = `Latest release: ${version}. All builds are compiled and released automatically via GitHub Actions.`;
+        }
+
+      } catch (err) {
+        console.warn('Could not fetch latest release from GitHub:', err);
+        // Page falls back gracefully to the static content already in the HTML
+      }
+    }
+
+    fetchLatestRelease();
   </script>
 </body>
 </html>

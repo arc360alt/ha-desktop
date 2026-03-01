@@ -76,13 +76,16 @@ function createMainWindow(serverUrl) {
   // Remove trailing slash
   url = url.replace(/\/$/, '');
 
+  const config = loadConfig();
+  const useSystemBorders = config?.systemBorders ?? false;
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    frame: false,
-    titleBarStyle: 'hidden',
+  frame: useSystemBorders,
+  titleBarStyle: useSystemBorders ? 'default' : 'hidden',
     backgroundColor: '#111318',
     webPreferences: {
       nodeIntegration: true,
@@ -96,6 +99,8 @@ function createMainWindow(serverUrl) {
     },
     icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png')
   });
+
+  mainWindow.removeMenu();
 
   // Apply mic/media permissions to the webview session when it attaches
   mainWindow.webContents.on('did-attach-webview', (_event, webviewContents) => {
@@ -202,6 +207,14 @@ ipcMain.handle('navigate-reload', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win && win.webContents) {
     win.webContents.send('trigger-reload');
+  }
+});
+
+ipcMain.handle('set-frame', (event, enabled) => {
+  const config = loadConfig();
+  if (config) {
+    config.systemBorders = enabled;
+    saveConfig(config);
   }
 });
 

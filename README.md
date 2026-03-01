@@ -5,12 +5,12 @@ A clean, frameless desktop client for [Home Assistant](https://www.home-assistan
 
 # Features
 
-- 🏠 First-run setup wizard to enter your HA server address
-- 🔐 Persistent login — saves cookies, localStorage, and session data
-- 🪟 Frameless window with custom titlebar (no ugly OS toolbar)
-- ↩️ Back & Reload navigation buttons
-- ⚙️ Settings menu to change server / reset session
-- 🖥️ Builds to `.exe` (Windows) and `.AppImage`/`.deb` (Linux)
+- First-run setup wizard to enter your HA server address
+- Persistent login — saves cookies, localStorage, and session data
+- Frameless window with custom titlebar (no ugly OS toolbar, You can use your system toolbar if issues arise though)
+-  Back & Reload navigation buttons
+- Settings menu to change server / reset session
+- Builds to `.exe` (Windows) and `.AppImage`/`.deb` (Linux)
 
 ---
 
