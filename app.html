@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home Assistant</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #111318;
+      --surface: #1e2330;
+      --border: #2a3044;
+      --accent: #18ACFF;
+      --text: #e8eaf0;
+      --text-muted: #7a8399;
+      --titlebar-h: 38px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Custom titlebar */
+    .titlebar {
+      height: var(--titlebar-h);
+      background: #0d1017;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      position: relative;
+      flex-shrink: 0;
+      /* No drag on the container — only the drag-region pseudo gets it */
+    }
+
+    /* Dedicated drag region sits behind everything */
+    .titlebar-drag {
+      position: absolute;
+      inset: 0;
+      -webkit-app-region: drag;
+      z-index: 0;
+    }
+
+    /* All real content sits above the drag region */
+    .win-controls,
+    .nav-controls,
+    .titlebar-right,
+    .titlebar-title {
+      position: relative;
+      z-index: 1;
+      -webkit-app-region: no-drag;
+    }
+
+    .win-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 14px;
+    }
+
+    .win-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      transition: filter 0.15s;
+    }
+    .win-btn:hover { filter: brightness(0.82); }
+    .btn-close { background: #ff5f57; }
+    .btn-min   { background: #febc2e; }
+    .btn-max   { background: #28c840; }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-right: 10px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-btn:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+    .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .nav-btn:disabled:hover { background: transparent; color: var(--text-muted); }
+
+    .nav-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .titlebar-title {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      pointer-events: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 40%;
+    }
+
+    .titlebar-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .settings-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .settings-btn:hover { background: var(--surface); color: var(--text); }
+    .settings-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Webview */
+    .webview-wrap {
+      position: relative;
+      flex: 1;
+      height: calc(100vh - var(--titlebar-h));
+    }
+
+    webview {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: flex;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: #111318;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      z-index: 10;
+      transition: opacity 0.4s;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .ha-logo-load {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #1a8fff 0%, #0055cc 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px rgba(24, 143, 255, 0.3);
+    }
+
+    .ha-logo-load svg {
+      width: 36px;
+      height: 36px;
+      fill: white;
+    }
+
+    .loading-text {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .loading-bar {
+      width: 180px;
+      height: 2px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .loading-bar-inner {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: loadpulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes loadpulse {
+      0%   { width: 0%; margin-left: 0%; }
+      50%  { width: 60%; margin-left: 20%; }
+      100% { width: 0%; margin-left: 100%; }
+    }
+
+    /* Settings dropdown */
+    .dropdown-menu {
+      position: absolute;
+      top: calc(var(--titlebar-h) + 4px);
+      right: 10px;
+      background: #1a1f2e;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px;
+      min-width: 180px;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      display: none;
+    }
+    .dropdown-menu.open { display: block; }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.12s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .dropdown-item:hover { background: var(--surface); }
+    .dropdown-item.danger { color: #ff7070; }
+    .dropdown-item.danger:hover { background: rgba(255,90,90,0.1); }
+
+    .dropdown-sep {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+
+    .dropdown-item svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    /* Confirm modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: #1a1f2e;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      max-width: 320px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .modal p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .modal-actions button {
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .modal-actions button:hover { opacity: 0.85; }
+    .btn-cancel { background: var(--surface); color: var(--text); }
+    .btn-confirm { background: #c0392b; color: white; }
+  </style>
+</head>
+<body>
+  <div class="titlebar">
+    <div class="titlebar-drag"></div>
+    <div class="win-controls">
+      <button class="win-btn btn-close" title="Close"></button>
+      <button class="win-btn btn-min" title="Minimize"></button>
+      <button class="win-btn btn-max" title="Maximize" id="max-btn"></button>
+    </div>
+
+    <div class="nav-controls">
+      <button class="nav-btn" id="back-btn" title="Back" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="nav-btn" title="Reload" onclick="doReload()">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+    </div>
+
+    <span class="titlebar-title" id="title-text">Home Assistant</span>
+
+    <div class="titlebar-right">
+      <button class="settings-btn" title="Settings" onclick="toggleDropdown()">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="dropdown-menu" id="dropdown">
+    <button class="dropdown-item" onclick="copyUrl()">
+      <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy URL
+    </button>
+    <button class="dropdown-item" onclick="openDevTools()">
+      <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Developer Tools
+    </button>
+    <div class="dropdown-sep"></div>
+    <button class="dropdown-item danger" onclick="showResetModal()">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Change Server
+    </button>
+  </div>
+
+  <div class="webview-wrap" id="webview-wrap">
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="ha-logo-load">
+        <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h5v-7h6v7h5V9L12 3z"/></svg>
+      </div>
+      <div class="loading-text" id="loading-text">Connecting to Home Assistant…</div>
+      <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+    </div>
+    <webview id="ha-webview" partition="persist:homeassistant" allowpopups webpreferences="allowRunningInsecureContent=yes, webSecurity=no"></webview>
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal">
+      <h3>Change Server</h3>
+      <p>This will clear your saved session and credentials, and return you to the setup screen.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-confirm" onclick="resetServer()">Reset & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const webview = document.getElementById('ha-webview');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
+    const titleText = document.getElementById('title-text');
+    const dropdown = document.getElementById('dropdown');
+    let initialLoadDone = false;
+
+    // Get server URL from query params
+    const params = new URLSearchParams(window.location.search);
+    let serverUrl = params.get('url') || '';
+
+    webview.addEventListener('dom-ready', () => {
+    });
+
+    if (serverUrl) {
+      webview.src = serverUrl;
+    }
+
+    // Webview events
+    webview.addEventListener('did-start-loading', () => {
+      if (!initialLoadDone) {
+        loadingOverlay.classList.remove('hidden');
+        loadingText.textContent = 'Connecting to Home Assistant…';
+      }
+    });
+
+    webview.addEventListener('did-stop-loading', () => {
+      if (!initialLoadDone) {
+        setTimeout(() => {
+          loadingOverlay.classList.add('hidden');
+          initialLoadDone = true;
+        }, 300);
+      }
+    });
+
+    webview.addEventListener('did-fail-load', (e) => {
+      if (e.errorCode === -3) return;
+      if (!initialLoadDone) {
+        loadingOverlay.classList.remove('hidden');
+        loadingText.textContent = `Could not connect — ${e.errorDescription} (${e.errorCode})`;
+      }
+    });
+
+    webview.addEventListener('page-title-updated', (e) => {
+      titleText.textContent = e.title || 'Home Assistant';
+      document.title = e.title || 'Home Assistant';
+    });
+
+    // Navigation
+    function goBack() {
+      if (webview.canGoBack()) webview.goBack();
+    }
+
+    function doReload() {
+      webview.reload();
+    }
+
+    function toggleMax() {
+      ipcRenderer.invoke('window-maximize');
+    }
+
+    // Dropdown
+    function toggleDropdown() {
+      dropdown.classList.toggle('open');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.settings-btn') && !e.target.closest('.dropdown-menu')) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    function copyUrl() {
+      navigator.clipboard.writeText(webview.getURL() || serverUrl);
+      dropdown.classList.remove('open');
+    }
+
+    function openDevTools() {
+      dropdown.classList.remove('open');
+      webview.openDevTools();
+    }
+
+    // Reset/change server
+    function showResetModal() {
+      dropdown.classList.remove('open');
+      document.getElementById('modal-backdrop').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-backdrop').classList.remove('open');
+    }
+
+    async function resetServer() {
+      closeModal();
+      await ipcRenderer.invoke('reset-server');
+      // main process opens setup window and closes this one
+    }
+
+    // Window controls via ipcRenderer directly
+    document.querySelector('.btn-close').onclick = () => ipcRenderer.invoke('window-close');
+    document.querySelector('.btn-min').onclick   = () => ipcRenderer.invoke('window-minimize');
+    document.querySelector('.btn-max').onclick   = () => ipcRenderer.invoke('window-maximize');
+  </script>
+</body>
+</html>

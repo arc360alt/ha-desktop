@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home Assistant Setup</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #111318;
+      --bg2: #181c23;
+      --surface: #1e2330;
+      --border: #2a3044;
+      --accent: #18ACFF;
+      --accent-glow: rgba(24, 172, 255, 0.18);
+      --text: #e8eaf0;
+      --text-muted: #7a8399;
+      --danger: #ff5a5a;
+      --success: #4cde8a;
+      --radius: 12px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .titlebar {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 12px;
+      gap: 8px;
+      position: relative;
+    }
+
+    .titlebar-drag {
+      position: absolute;
+      inset: 0;
+      -webkit-app-region: drag;
+      z-index: 0;
+    }
+
+    .titlebar button {
+      position: relative;
+      z-index: 1;
+      -webkit-app-region: no-drag;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .titlebar button:hover { opacity: 0.8; }
+    .btn-close { background: #ff5f57; }
+    .btn-min   { background: #febc2e; }
+    .btn-max   { background: #28c840; }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 38px);
+      padding: 32px 40px;
+    }
+
+    .logo-wrap {
+      margin-bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ha-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #1a8fff 0%, #0055cc 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px rgba(24, 143, 255, 0.35), 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .ha-icon svg {
+      width: 42px;
+      height: 42px;
+      fill: white;
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    .form-section {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    input[type="text"]::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .connect-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 15px 24px;
+      background: linear-gradient(135deg, #1a8fff, #0055cc);
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(24, 143, 255, 0.3);
+    }
+
+    .connect-btn:hover {
+      opacity: 0.92;
+      box-shadow: 0 6px 28px rgba(24, 143, 255, 0.45);
+    }
+
+    .connect-btn:active { transform: scale(0.98); }
+
+    .connect-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status.error {
+      display: flex;
+      background: rgba(255, 90, 90, 0.12);
+      border: 1px solid rgba(255, 90, 90, 0.3);
+      color: var(--danger);
+    }
+
+    .status.loading {
+      display: flex;
+      background: rgba(24, 172, 255, 0.08);
+      border: 1px solid rgba(24, 172, 255, 0.2);
+      color: var(--accent);
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(24, 172, 255, 0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .divider {
+      width: 100%;
+      max-width: 360px;
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
+    }
+
+    .features {
+      width: 100%;
+      max-width: 360px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="titlebar">
+    <div class="titlebar-drag"></div>
+    <button class="btn-min" title="Minimize" id="btn-min"></button>
+    <button class="btn-max" title="Maximize" id="btn-max"></button>
+    <button class="btn-close" title="Close" id="btn-close"></button>
+  </div>
+
+  <div class="container">
+    <div class="logo-wrap">
+      <div class="ha-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3L4 9v12h5v-7h6v7h5V9L12 3z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Home Assistant</h1>
+        <p class="subtitle">Connect to your smart home server</p>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label for="server-url">Server Address</label>
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="server-url"
+          placeholder="homeassistant.local:8123"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <p class="hint">Enter your Home Assistant server address. Include the port if needed (e.g. <strong>192.168.1.10:8123</strong> or <strong>https://my.domain.com</strong>).</p>
+
+      <button class="connect-btn" id="connect-btn" onclick="connect()">
+        Connect
+      </button>
+
+      <div class="status" id="status">
+        <div class="spinner" id="spinner"></div>
+        <span id="status-text"></span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="features">
+      <div class="feature"><div class="feature-dot"></div>Saved credentials</div>
+      <div class="feature"><div class="feature-dot"></div>Persistent sessions</div>
+      <div class="feature"><div class="feature-dot"></div>No toolbar clutter</div>
+      <div class="feature"><div class="feature-dot"></div>Native app feel</div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    document.getElementById('btn-min').onclick   = () => ipcRenderer.invoke('window-minimize');
+    document.getElementById('btn-max').onclick   = () => ipcRenderer.invoke('window-maximize');
+    document.getElementById('btn-close').onclick = () => ipcRenderer.invoke('window-close');
+
+    const input = document.getElementById('server-url');
+    const btn = document.getElementById('connect-btn');
+    const statusEl = document.getElementById('status');
+    const statusText = document.getElementById('status-text');
+    const spinner = document.getElementById('spinner');
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') connect();
+    });
+
+    function showError(msg) {
+      statusEl.className = 'status error';
+      spinner.style.display = 'none';
+      statusText.textContent = msg;
+    }
+
+    function showLoading(msg) {
+      statusEl.className = 'status loading';
+      spinner.style.display = 'block';
+      statusText.textContent = msg;
+    }
+
+    async function connect() {
+      const raw = input.value.trim();
+      if (!raw) {
+        showError('Please enter a server address.');
+        return;
+      }
+
+      btn.disabled = true;
+      showLoading('Connecting to server...');
+
+      const saved = await ipcRenderer.invoke('save-server', raw);
+      if (!saved) {
+        showError('Failed to save server configuration. Please try again.');
+        btn.disabled = false;
+      }
+      // If successful, main.js opens the main window and closes this one
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+Place your icon files here:
+- icon.ico  (for Windows, recommended 256x256)
+- icon.png  (for Linux, recommended 512x512)
+
+You can generate icons from the Home Assistant logo.
+The app will still work without icons.
