@@ -43,6 +43,7 @@ On first startup, you'll see a setup screen. Enter your Home Assistant server ad
 - `homeassistant.local:8123` ← local mDNS
 - `192.168.1.10:8123` ← local IP
 - `https://my.homeassistant.domain.com` ← remote/Nabu Casa
+- Any other home assistant URL will work too, these arent the only ones that will work.
 
 ---
 
