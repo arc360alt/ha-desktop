@@ -1,3 +1,4 @@
+We are not in any way affiliated with home assistant, this is a completly seperate project from theirs.
 # Home Assistant Desktop
 
 A clean, frameless desktop client for [Home Assistant](https://www.home-assistant.io/) — supports Windows and Linux.
