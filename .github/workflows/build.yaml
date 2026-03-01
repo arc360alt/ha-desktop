@@ -86,6 +86,19 @@ jobs:
           path: artifacts
           merge-multiple: true
 
+      - name: Rename artifacts to include version
+        run: |
+          VERSION=${{ github.event.inputs.tag_name || github.ref_name }}
+          # Strip leading 'v' for filenames
+          VERSION_CLEAN=${VERSION#v}
+          cd artifacts
+          for f in *; do
+            new="${f/1.0.0/$VERSION_CLEAN}"
+            if [ "$f" != "$new" ]; then
+              mv "$f" "$new"
+            fi
+          done
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
